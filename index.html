@@ -5,37 +5,91 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
   </head>
   <body>
-    Some text here
     <canvas id="gameCanvas" width="800" height="600"></canvas>
   </body>
   <script>
     let canvas;
     let canvasContext;
     let ballX = 50;
+    let ballY = 50;
+    let ballSpeedX = 10;
+    let ballSpeedY = 4;
+
+    let paddle1Y = 250;
+    const PADDLE_HEIGHT = 100;
+
+    function calculateMousePos(evt) {
+      let rect = canvas.getBoundingClientRect();
+      var root = document.documentElement;
+      let mouseX = evt.clientX - rect.left - root.scrollLeft;
+      let mouseY = evt.clientY - rect.top - root.scrollTop;
+      return {
+        x: mouseX,
+        y: mouseY,
+      };
+    }
+
     window.onload = () => {
       canvas = document.getElementById('gameCanvas');
       canvasContext = canvas.getContext('2d');
       let framesPerSecond = 30;
       drawEverything();
       let intervalo = setInterval(callBoth, 1000 / framesPerSecond);
+      canvas.addEventListener('mousemove', (e) => {
+        let mousePos = calculateMousePos(e);
+        paddle1Y = mousePos.y - PADDLE_HEIGHT / 2;
+      });
     };
     function callBoth() {
       drawEverything();
       moveEverything();
+      // console.log(paddle1Y);
+    }
+    function ballReset() {
+      ballSpeedX = -ballSpeedX;
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
     }
     function moveEverything() {
-      ballX += 5;
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+      if (ballX < 10) {
+        if (ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT)
+          ballSpeedX = -ballSpeedX;
+        else ballReset();
+      }
+      if (ballX > canvas.width - 10) ballSpeedX = -ballSpeedX;
+      if (ballY < 10) ballSpeedY = -ballSpeedY;
+      if (ballY > canvas.height - 10) ballSpeedY = -ballSpeedY;
     }
     function drawEverything() {
-      canvasContext.fillStyle = 'black';
-      canvasContext.fillRect(0, 0, canvas.width, canvas.height);
-      canvasContext.fillStyle = 'white';
-      canvasContext.fillRect(0, 210, 10, 100);
-      canvasContext.fillStyle = 'red';
-      canvasContext.fillRect(ballX, 100, 10, 10);
-      if (ballX > 530) console.log('mayor a 530 en width');
+      // blanks out the screen with black
+      colorRect(0, 0, canvas.width, canvas.height, 'black');
+      // this is the left player paddle
+      colorRect(0, paddle1Y, 10, 100, 'YELLOW');
+      // next line draws the ball
+      colorCircle(ballX, ballY, 10, 'white');
+      // if (ballX > 530) console.log('mayor a 530 en width');
+    }
+    function colorRect(leftX, topY, width, height, drawColor) {
+      canvasContext.fillStyle = drawColor;
+      canvasContext.fillRect(leftX, topY, width, height);
+    }
+    function colorCircle(centerX, centerY, radius, drawColor) {
+      canvasContext.fillStyle = drawColor;
+      canvasContext.beginPath();
+      canvasContext.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
+      canvasContext.fill();
     }
   </script>
 </html>
