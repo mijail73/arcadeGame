@@ -24,8 +24,14 @@
     let ballY = 50;
     let ballSpeedX = 10;
     let ballSpeedY = 4;
+    let radiusBall = 10;
+
+    let player1Score = 0;
+    let player2Score = 0;
 
     let paddle1Y = 250;
+    let paddle2Y = 250;
+    const PADDLE_THICKNESS = 10;
     const PADDLE_HEIGHT = 100;
 
     function calculateMousePos(evt) {
@@ -60,26 +66,57 @@
       ballX = canvas.width / 2;
       ballY = canvas.height / 2;
     }
+    function computerMovement() {
+      let paddle2YCenter = paddle2Y + PADDLE_HEIGHT / 2;
+      if (paddle2YCenter < ballY - 35) paddle2Y += 6;
+      else if (paddle2YCenter > ballY + 35) paddle2Y -= 6;
+    }
     function moveEverything() {
+      computerMovement();
       ballX += ballSpeedX;
       ballY += ballSpeedY;
-      if (ballX < 10) {
-        if (ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT)
-          ballSpeedX = -ballSpeedX;
-        else ballReset();
+      if (ballX < 0) {
+        player2Score++;
+        ballReset();
       }
-      if (ballX > canvas.width - 10) ballSpeedX = -ballSpeedX;
-      if (ballY < 10) ballSpeedY = -ballSpeedY;
-      if (ballY > canvas.height - 10) ballSpeedY = -ballSpeedY;
+      if (ballX > canvas.width) {
+        player1Score++;
+        ballReset();
+      }
+      if (
+        (ballY > paddle1Y &&
+          ballY < paddle1Y + PADDLE_HEIGHT &&
+          ballX === PADDLE_THICKNESS) ||
+        (ballY > paddle2Y &&
+          ballY < paddle2Y + PADDLE_HEIGHT &&
+          ballX === canvas.width - PADDLE_THICKNESS)
+      )
+        ballSpeedX = -ballSpeedX;
+      if (ballY < radiusBall) ballSpeedY = -ballSpeedY;
+      if (ballY > canvas.height - radiusBall) ballSpeedY = -ballSpeedY;
     }
     function drawEverything() {
       // blanks out the screen with black
       colorRect(0, 0, canvas.width, canvas.height, 'black');
       // this is the left player paddle
-      colorRect(0, paddle1Y, 10, 100, 'YELLOW');
+      colorRect(0, paddle1Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'white');
+      // this is the right computer paddle
+      colorRect(
+        canvas.width - PADDLE_THICKNESS,
+        paddle2Y,
+        PADDLE_THICKNESS,
+        PADDLE_HEIGHT,
+        'white'
+      );
       // next line draws the ball
-      colorCircle(ballX, ballY, 10, 'white');
+      colorCircle(ballX, ballY, radiusBall, 'white');
       // if (ballX > 530) console.log('mayor a 530 en width');
+      canvasContext.fillText('Player 1 points: ' + player1Score, 100, 100);
+      canvasContext.fillText(
+        'Player 2 points: ' + player2Score,
+        canvas.width - 200,
+        100
+      );
     }
     function colorRect(leftX, topY, width, height, drawColor) {
       canvasContext.fillStyle = drawColor;
